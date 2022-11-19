@@ -197,15 +197,14 @@ def evauation(data, model, splits, output, wp):
           log = np.array(labels)
         else: 
           out = torch.cat((out, dev_out), 0)
-          log = np.concatenate(log, labels)
+          log = np.concatenate([log, labels])
       
       if not i:
-        for index, pred in zip(labels, dev_out):
+        for index, pred in zip(log, out):
           dic[index] = [torch.argmax(pred).item()]
       else:
-        for index, pred in zip(labels, dev_out):
+        for index, pred in zip(log, out):
           dic[index] += [torch.argmax(pred).item()]
-      print(len(dev_out),len(labels))
 
   for i in dic:
     dic[i] = mode(dic[i])
