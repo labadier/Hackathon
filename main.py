@@ -11,7 +11,7 @@ random.seed(0)
 np.random.seed(0)
 
 def check_params(args=None):
-  parser = argparse.ArgumentParser(description='Language Model Encoder')
+  parser = argparse.ArgumentParser(description='Deforestation Detector')
 
   parser.add_argument('-mode', metavar='mode', help='Train or Evaluation')
   parser.add_argument('-model', metavar='model', help='model to encode')

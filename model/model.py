@@ -37,7 +37,7 @@ class ZeroDeforestationDataset(Dataset):
     if self.target_transform:
       label = self.target_transform(label)
 
-    return {'images':image, 'labels':label, 'index':self.img_dir[idx].split('/')[-1]}
+    return {'images':image, 'labels':label, 'index':self.img_dir[idx].split('/')[-1].split('.')[0]}
 
 def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_size, lr, output):
   
@@ -190,11 +190,12 @@ def evauation(data, model, splits, output, wp):
       model_ft.load_state_dict(torch.load(f'{os.path.join(wp, model)}_{i+1}.pt', map_location='cuda'))
       model_ft = model_ft.to('cuda')
 
+      model.eval()
       for k, data_batch_dev in enumerate(dev_loader, 0):
 
         labels = data_batch_dev['index']
         torch.cuda.empty_cache() 
-        dev_out = model(data_batch_dev['images'].to('cuda'))
+        dev_out = model_ft(data_batch_dev['images'].to('cuda'))
 
         if k == 0:
           out = dev_out

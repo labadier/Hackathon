@@ -10,10 +10,14 @@ def load_data(path, mode, labeled):
   
   labels, images = [], []
 
-  for i in range(len(df)):
-    images += [os.path.join(path, df[i,1])]
-    if labeled:
+  if labeled:
+
+    for i in range(len(df)):
+      images += [os.path.join(path, df[i,1])]
       labels += [df[i,0]]
+  else:
+    for i in range(len(df)):
+      images += [os.path.join(path, df[i,0])]
   
   if labeled == True:
     return {'images': np.array(images), 'labels': np.array(labels)}

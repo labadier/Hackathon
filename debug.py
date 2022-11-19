@@ -1,6 +1,7 @@
 #%%
 import torchvision.models as models
 import torch
+import numpy as np
 
 from model.model import ZeroDeforestationDataset
 from utils import load_data
@@ -8,8 +9,20 @@ from torch.utils.data import Dataset, DataLoader
 
 from torchvision import transforms
 
-#%%
+model_ft = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
+num_ftrs = model_ft.classifier[-1].in_features
+model_ft.classifier[-1] = torch.nn.Linear(num_ftrs, 3)
 
+data = load_data('data', 'test', False)
+
+dev_loader = DataLoader( ZeroDeforestationDataset( {'images':data['images'], 'labels':np.zeros(len(data['images'],))}, 
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])),
+            batch_size=3)
+
+#%%
 model_ft = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
         
 num_ftrs = model_ft.classifier[-1].in_features
@@ -61,4 +74,29 @@ for i, (train_index, test_index) in enumerate(skf.split(data['images'], data['la
 
 
 # %%
+import os
+wp = 'out'
+i = 0
+model = 'vgg16'
+model_ft.load_state_dict(torch.load(f'{os.path.join(wp, model)}_{i+1}.pt', map_location='cuda'))
+model_ft = model_ft.to('cuda')
+
+with torch.no_grad():
+  for k, data_batch_dev in enumerate(dev_loader, 0):
+
+      labels = data_batch_dev['index']
+      torch.cuda.empty_cache() 
+      dev_out = model_ft(data_batch_dev['images'].to('cuda'))
+      break
+
+# %%
+dic = {}
+for index, pred in zip(labels, dev_out):
+  dic[index] = [torch.argmax(pred).item()]
+# %%
+
+ans = {'target': dic}
+import json
+with open(os.path.join('.', 'predictions.json'), 'w') as fp:
+  json.dump(ans, fp)
 # %%
