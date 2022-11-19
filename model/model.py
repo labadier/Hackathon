@@ -151,7 +151,7 @@ def train_model(model, optimizer, loss_function, train_loader, dev_loader, epoch
       torch.save(model.state_dict(), output) 
       best_f1 = dev_f1
 
-    iter.set_postfix({'f1_train':f1, 'loss_train':running_loss, 'f1_dev':dev_f1, 'loss_dev':dev_loss}) 
+    print(f'f1_train:{f1}, loss_train:{running_loss}, f1_dev:{dev_f1}, loss_dev:{dev_loss}') 
     
 
   return {'loss': eloss, 'acc': ef1, 'dev_loss': edev_loss, 'dev_acc': edev_f1}
