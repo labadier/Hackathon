@@ -174,7 +174,7 @@ def evauation(data, model, splits, output, wp):
                   transforms.ToTensor(),
                   transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
               ])),
-              batch_size=64)
+              batch_size=128)
 
   dic = {}
 
@@ -194,10 +194,10 @@ def evauation(data, model, splits, output, wp):
 
         if k == 0:
           out = dev_out
-          log = labels.copy()
+          log = np.array(labels)
         else: 
           out = torch.cat((out, dev_out), 0)
-          log += labels
+          log = np.concatenate(log, labels)
       
       if not i:
         for index, pred in zip(labels, dev_out):
@@ -205,6 +205,7 @@ def evauation(data, model, splits, output, wp):
       else:
         for index, pred in zip(labels, dev_out):
           dic[index] += [torch.argmax(pred).item()]
+      print(len(dev_out),len(labels))
 
   for i in dic:
     dic[i] = mode(dic[i])
