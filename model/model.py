@@ -48,15 +48,17 @@ def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_s
    
     if model_name == 'vgg16':
       model_ft = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
+      optimizer_ft = torch.optim.Adagrad(model_ft.parameters(), lr=lr)
 
     if model_name == 'resnet':
       model_ft = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
+      optimizer_ft = torch.optim.Adam(model_ft.parameters(), lr=lr)
 
     num_ftrs = model_ft.classifier[-1].in_features
     model_ft.classifier[-1] = torch.nn.Linear(num_ftrs, 3)
     model_ft = model_ft.to('cuda')
 
-    optimizer_ft = torch.optim.Adagrad(model_ft.parameters(), lr=lr)
+    
     loss_ft = torch.nn.CrossEntropyLoss()
 
     
