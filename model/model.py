@@ -11,11 +11,6 @@ from sklearn.metrics import f1_score
 from statistics import mode
 import json
 
-path = 'data'
-mode = 'train'
-
-mode = os.path.join(path, f'{mode}.csv')
-
 class ZeroDeforestationDataset(Dataset):
   def __init__(self, data, transform=None, target_transform=None):
 
@@ -199,10 +194,10 @@ def evauation(data, model, splits, output, wp):
 
         if k == 0:
           out = dev_out
-          log = labels
+          log = labels.copy()
         else: 
           out = torch.cat((out, dev_out), 0)
-          log = torch.cat((log, labels), 0)
+          log += labels
       
       if not i:
         for index, pred in zip(labels, dev_out):
@@ -217,9 +212,6 @@ def evauation(data, model, splits, output, wp):
   ans = {'target': dic}
   with open(os.path.join(output, 'predictions.json'), 'w') as fp:
     json.dump(ans, fp)
-
-  ans = pd.DataFrame(dic)
-  ans.to_csv(os.path.join(output, 'predictions.csv'))
 
 
 
