@@ -8,6 +8,8 @@ from sklearn.model_selection import StratifiedKFold
 import torchvision.models as models
 from tqdm import tqdm
 from sklearn.metrics import f1_score
+from statistics import mode
+import json
 
 path = 'data'
 mode = 'train'
@@ -35,7 +37,7 @@ class ZeroDeforestationDataset(Dataset):
     if self.target_transform:
       label = self.target_transform(label)
 
-    return {'images':image, 'labels':label}
+    return {'images':image, 'labels':label, 'index':self.img_dir[idx].split('/')[-1]}
 
 def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_size, lr, output):
   
@@ -162,7 +164,61 @@ def train_model(model, optimizer, loss_function, train_loader, dev_loader, epoch
     print(f'f1_train:{f1}, loss_train:{running_loss}, f1_dev:{dev_f1}, loss_dev:{dev_loss}') 
     
 
-  return {'loss': eloss, 'acc': ef1, 'dev_loss': edev_loss, 'dev_acc': edev_f1}
+  return {'loss': eloss, 'f1': ef1, 'dev_loss': edev_loss, 'dev_f1': edev_f1}
 
     
+def evauation(data, model, splits, output, wp):
+
+  if model == 'vgg16':
+    model_ft = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
+    num_ftrs = model_ft.classifier[-1].in_features
+    model_ft.classifier[-1] = torch.nn.Linear(num_ftrs, 3)
+
+  dev_loader = DataLoader( ZeroDeforestationDataset( {'images':data['images'], 'labels':np.zeros(len(data['images'],))}, 
+              transform=transforms.Compose([
+                  transforms.ToTensor(),
+                  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+              ])),
+              batch_size=64)
+
+  dic = {}
+
+  itr = tqdm(range(splits))
+  with torch.no_grad():
+    for i in itr:
+      
+      model_ft.load_state_dict(torch.load(f'{os.path.join(wp, model)}_{i+1}.pt', map_location='cuda'))
+      model_ft = model_ft.to('cuda')
+
+      for k, data_batch_dev in enumerate(dev_loader, 0):
+
+        labels = data_batch_dev['index']
+        torch.cuda.empty_cache() 
+        dev_out = model(data_batch_dev['images'].to('cuda'))
+
+        if k == 0:
+          out = dev_out
+          log = labels
+        else: 
+          out = torch.cat((out, dev_out), 0)
+          log = torch.cat((log, labels), 0)
+      
+      if not i:
+        for index, pred in zip(labels, dev_out):
+          dic[index] = [torch.argmax(pred).item()]
+      else:
+        for index, pred in zip(labels, dev_out):
+          dic[index] += [torch.argmax(pred).item()]
+
+  for i in dic:
+    dic[i] = mode(dic[i])
+
+  ans = {'target': dic}
+  with open(os.path.join(output, 'predictions.json'), 'w') as fp:
+    json.dump(ans, fp)
+
+  ans = pd.DataFrame(dic)
+  ans.to_csv(os.path.join(output, 'predictions.csv'))
+
+
 

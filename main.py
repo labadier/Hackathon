@@ -5,7 +5,7 @@ from sklearn import svm
 from matplotlib.pyplot import axis
 from utils import load_data, plot_training
 
-from model.model import train_model_CV
+from model.model import train_model_CV, evauation
 torch.manual_seed(0)
 random.seed(0)
 np.random.seed(0)
@@ -47,3 +47,9 @@ if __name__ == '__main__':
 
     history = train_model_CV(model, data, splits = 5, epoches = ep, batch_size = bs, interm_layer_size = interm_layer_size, lr = lr, output=output)
     plot_training(history, model, output, 'loss')
+
+  if mode == 'eval':
+
+    data = load_data(dt, 'test', False)
+    evauation(data=data, model=model, splits=5, output=output, wp=wp)
+
