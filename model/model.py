@@ -190,7 +190,7 @@ def evauation(data, model, splits, output, wp):
       model_ft.load_state_dict(torch.load(f'{os.path.join(wp, model)}_{i+1}.pt', map_location='cuda'))
       model_ft = model_ft.to('cuda')
 
-      model.eval()
+      model_ft.eval()
       for k, data_batch_dev in enumerate(dev_loader, 0):
 
         labels = data_batch_dev['index']
