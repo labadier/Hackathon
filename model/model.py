@@ -60,7 +60,6 @@ def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_s
       model_ft = model_ft.to('cuda')
       optimizer_ft = torch.optim.Adam(model_ft.parameters(), lr=lr)
 
-    
 
     
     loss_ft = torch.nn.CrossEntropyLoss()
@@ -83,13 +82,12 @@ def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_s
                 shuffle=True)
 
     history.append(train_model(model = model_ft, optimizer = optimizer_ft, loss_function= loss_ft, train_loader= train_loader,
-                    dev_loader= dev_loader, epoches = epoches, output = os.path.join(output, f'{model_name}.pt')))
+                    dev_loader= dev_loader, epoches = epoches, output = os.path.join(output, f'{model_name}_{i+1}.pt')))
     print(f'Training Finished Split: {i+1}')
     
     del train_loader
     del model_ft
     del dev_loader
-    break
 
   return history
 
