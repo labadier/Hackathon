@@ -78,7 +78,7 @@ def train_model_CV(model_name, data, splits, epoches, batch_size, interm_layer_s
     
     del train_loader
     del model_ft
-    del train_loader
+    del dev_loader
     break
 
   return history
